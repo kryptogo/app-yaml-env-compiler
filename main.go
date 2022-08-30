@@ -16,7 +16,7 @@ func main() {
 	fileNameString := os.Getenv("INPUT_APPYAMLPATH")
 	fmt.Println("Using " + fileNameString)
 	filename, _ := filepath.Abs(fileNameString)
-	
+
 	yamlFile, err := ioutil.ReadFile(filename)
 	if err != nil {
 		panic(err)
@@ -27,8 +27,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	
-	fmt.Println(fmt.Sprintf("Env variables will be replaced: %v",mapResult["env_variables"]))
+
+	fmt.Println(fmt.Sprintf("Env variables will be replaced: %v", mapResult["env_variables"]))
 
 	for k, any := range mapResult {
 		if k == "env_variables" {
@@ -46,15 +46,20 @@ func main() {
 					envName := in.(string)
 					envVal := iv.(string)
 
-					env := strings.Replace(strings.TrimSpace(envVal), "$", "", -1)
-					envMap[envName] = os.Getenv(env)
+					env := strings.TrimSpace(envVal)
+					if strings.HasPrefix(env, "$") {
+						env := strings.Replace(strings.TrimSpace(envVal), "$", "", -1)
+						envMap[envName] = os.Getenv(env)
+					} else {
+						envMap[envName] = envVal
+					}
 				}
 			default:
 				panic(fmt.Sprintf("This is not supposed to happen, but if it does, good luck"))
 			}
 		}
 	}
-	
+
 	fmt.Println(fmt.Sprintf("Compiled env variables: %v", mapResult["env_variables"]))
 
 	out, err := yaml.Marshal(mapResult)
